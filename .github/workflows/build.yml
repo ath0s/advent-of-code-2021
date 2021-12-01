@@ -1,0 +1,30 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+      - name: Compile
+        run: ./gradlew build
+      - name: Test
+        run: ./gradlew test
+      - name: Publish Test Report
+        if: always()
+        uses: scacap/action-surefire-report@v1
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
