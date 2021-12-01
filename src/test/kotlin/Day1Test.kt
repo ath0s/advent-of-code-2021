@@ -1,12 +1,20 @@
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 class Day1Test {
 
     @Test
-    fun `Should calculate number of increases`() {
+    fun `Part One`() {
         val result = numberOfIncreases("Day01_test.txt")
 
-        assert(result == 7)
+        assertEquals(7, result)
+    }
+
+    @Test
+    fun `Part Two`() {
+        val result = numberOfIncreases("Day01_test.txt", 3)
+
+        assertEquals(5, result)
     }
 
 }
