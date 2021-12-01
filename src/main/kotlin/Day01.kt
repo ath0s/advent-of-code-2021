@@ -14,10 +14,10 @@ private fun Sequence<String>.toInts() =
     map { it.toInt() }
 
 private fun Sequence<Int>.sumWindow(windowSize: Int) =
-    windowed(windowSize) { it.sum() }
+    if (windowSize == 1) this else windowed(windowSize) { it.sum() }
 
 private fun <T : Comparable<T>> Sequence<T>.mapToIsIncreasing() =
-    windowed(2) { (first, second) -> second > first }
+    zipWithNext { first, second -> second > first }
 
 fun main() {
     val filename = "Day01.txt"
