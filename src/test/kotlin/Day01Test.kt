@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class Day1Test {
+class Day01Test {
 
     @Test
     fun `Part One`() {
