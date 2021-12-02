@@ -1,39 +1,54 @@
+import Direction.*
 import org.intellij.lang.annotations.Language
 import kotlin.io.path.useLines
 
 private val lineFormat = Regex("""(\S+)\s+(\d+)""")
 
-fun navigate(@Language("file-reference") filename: String): Int =
+fun navigate(@Language("file-reference") filename: String, useAim: Boolean = false): Int =
     filename.asPath()
         .useLines { lines ->
             return lines.map { line ->
                 val (direction: Direction, distance: Int) = lineFormat.find(line)!!
-                direction to distance
-            }.fold(Position()) { position, (direction, distance) -> direction(position, distance); position }
+                movement(direction, distance, useAim)
+            }.fold(Position()) { position, movement -> movement(position) }
                 .total
         }
 
-
-class Position(var horisontal: Int = 0, var depth: Int = 0) {
+data class Position(val horizontal: Int = 0, val depth: Int = 0, val aim : Int = 0) {
     val total get() =
-        horisontal * depth
+        horizontal * depth
 }
 
-enum class Direction(private val move: (Position, Int) -> Unit) : (Position, Int) -> Unit {
-    forward({ position: Position, distance: Int ->
-        position.horisontal += distance
-    }),
-    down({ position: Position, distance: Int ->
-        position.depth += distance
-    }),
-    up({ position: Position, distance: Int ->
-        position.depth -= distance
-    });
+@Suppress("EnumEntryName")
+enum class Direction {
+    forward,
+    down,
+    up
+}
 
-    override fun invoke(position: Position, distance: Int) {
-        move(position, distance)
+private fun movement(direction: Direction, distance: Int, useAim: Boolean = false): (Position) -> Position =
+    when (direction) {
+        forward -> { position ->
+            position.copy(
+                horizontal = position.horizontal + distance,
+                depth = position.depth + (position.aim * distance)
+            )
+        }
+        down -> { position ->
+            if (useAim) {
+                position.copy(aim = position.aim + distance)
+            } else {
+                position.copy(depth = position.depth + distance)
+            }
+        }
+        up -> { position ->
+            if (useAim) {
+                position.copy(aim = position.aim - distance)
+            } else {
+                position.copy(depth = position.depth - distance)
+            }
+        }
     }
-}
 
 private inline operator fun <reified T : Enum<T>> MatchResult.component1(): T =
     enumValueOf(groupValues[1])
@@ -48,8 +63,8 @@ fun main() {
         navigate(filename)
 
     fun partTwo() =
-        navigate(filename)
+        navigate(filename, true)
                              
     println("Part One:\t${partOne()}")
-    //println("Part Two:\t${partTwo()}")
+    println("Part Two:\t${partTwo()}")
 }

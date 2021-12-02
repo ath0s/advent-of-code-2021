@@ -10,4 +10,11 @@ class Day02Test {
         assertEquals(150, result)
     }
 
+    @Test
+    fun `Part Two`() {
+        val result = navigate("Day02_test.txt", true)
+
+        assertEquals(900, result)
+    }
+
 }
