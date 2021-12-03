@@ -10,4 +10,11 @@ class Day03Test {
         assertEquals(198, result)
     }
 
+    @Test
+    fun `Part Two`() {
+        val result = lifeSupportRating("Day03_test.txt")
+
+        assertEquals(230, result)
+    }
+
 }
