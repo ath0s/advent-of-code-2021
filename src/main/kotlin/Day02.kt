@@ -14,13 +14,13 @@ fun navigate(@Language("file-reference") filename: String, useAim: Boolean = fal
                 .total
         }
 
-data class Position(val horizontal: Int = 0, val depth: Int = 0, val aim : Int = 0) {
+private data class Position(val horizontal: Int = 0, val depth: Int = 0, val aim : Int = 0) {
     val total get() =
         horizontal * depth
 }
 
 @Suppress("EnumEntryName")
-enum class Direction {
+private enum class Direction {
     forward,
     down,
     up
