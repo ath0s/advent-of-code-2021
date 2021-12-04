@@ -4,42 +4,47 @@ import org.intellij.lang.annotations.Language
 import kotlin.io.path.readLines
 
 
-fun bingoScore(@Language("file-reference") filename: String): Int =
+fun bingoScore(@Language("file-reference") filename: String, selector: (Sequence<Int>) -> Int): Int =
     filename.asPath()
     .readLines()
-    .let { lines ->
-        val drawnNumbers = lines.first().split(',').map { it.toInt() }
-
-        val boards = lines.drop(1).fold(mutableListOf<MutableList<String>>()) { accumulator, line ->
-            if (line.isBlank()) {
-                accumulator.add(mutableListOf())
-            } else {
-                accumulator.last().add(line)
-            }
-            accumulator
-        }.map {
-            Board(it.map { line ->
-                line.trim().split(Regex("\\D+")).map { number ->
-                    number.toInt()
-                }
-            })
-        }
-
-        drawnNumbers.forEach { drawnNumber ->
-            boards.forEach { board -> board.check(drawnNumber) }
-
-            val winner = boards.firstOrNull { it.bingo }
-            if (winner != null) {
-                println("Winner:")
-                println(winner)
-                println("Last drawn number: $drawnNumber")
-                println("sumUnmarked: ${winner.sumUnmarked}")
-                return drawnNumber * winner.sumUnmarked
-            }
-        }
-        return 0
+    .let {
+        winningBoards(it).run(selector)
     }
 
+private fun winningBoards(lines : List<String>) =
+    sequence {
+        val drawnNumbers = lines.first().split(',').map { it.toInt() }
+
+                val boards = lines.drop(1).fold(mutableListOf<MutableList<String>>()) { accumulator, line ->
+                    if (line.isBlank()) {
+                        accumulator.add(mutableListOf())
+                    } else {
+                        accumulator.last().add(line)
+                    }
+                    accumulator
+                }.mapTo(mutableListOf()) {
+                    Board(it.map { line ->
+                        line.trim().split(Regex("\\D+")).map { number ->
+                            number.toInt()
+                        }
+                    })
+                }
+
+                drawnNumbers.forEach { drawnNumber ->
+                    boards.forEach { board -> board.check(drawnNumber) }
+
+                    boards.filter { it.bingo }.forEach { winner ->
+                        boards.remove(winner)
+                        val sum = drawnNumber * winner.sumUnmarked
+
+                        println()
+                        println(winner)
+                        println("sumUnmarked (${winner.sumUnmarked}) * lastDrawnNumber ($drawnNumber) = $sum")
+
+                        yield(sum)
+                    }
+                }
+    }
 
 private class Board(numbers: List<List<Int>>) {
     private val rows = numbers.map { row -> row.map { number -> Position(number) } }
@@ -78,16 +83,15 @@ private class Board(numbers: List<List<Int>>) {
     }
 }
 
-
 fun main() {
     val filename = "Day04.txt"
 
     fun partOne() =
-        bingoScore(filename)
+        bingoScore(filename) { it.first() }
 
     fun partTwo() =
-        bingoScore(filename)
+        bingoScore(filename) { it.last() }
 
     println("Part One:\t${partOne()}")
-    //println("Part Two:\t${partTwo()}")
+    println("Part Two:\t${partTwo()}")
 }
