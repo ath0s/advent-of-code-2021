@@ -1,31 +1,30 @@
 import org.intellij.lang.annotations.Language
 import kotlin.io.path.readText
 
-fun lanternfish(@Language("file-reference") filename: String, printState: Boolean = false): Int {
-    val state = filename.asPath().readText().splitToSequence(',').map { it.toInt() }.toMutableList()
-    if (printState) {
-        println("Initial state:\t${state.display}")
+fun lanternfish(@Language("file-reference") filename: String, days: Int, printState: Boolean = false): Long {
+    val input = filename.asPath().readText().split(',').map { it.toInt() }
+
+    val state = Array(9) { index ->
+        input.count { it == index }.toLong()
     }
 
-    for (day in 1..80) {
-        val newborn = mutableListOf<Int>()
-        for (i in state.indices) {
-            var age = state[i]
-            if (age == 0) {
-                newborn += 8
-                age = 6
-            } else {
-                age -= 1
-            }
-            state[i] = age
+    if (printState)
+        println(state.joinToString(","))
+
+    for (day in 1..days) {
+        val newBorn = state[0]
+
+        for (index in 1..8) {
+            state[index - 1] = state[index]
         }
-        state += newborn
-        if (printState) {
-            println("After ${day.toString().padStart(2)} days:\t${state.display}")
-        }
+        state[6] += newBorn
+        state[8] = newBorn
+
+        if (printState)
+            println(state.joinToString(","))
     }
 
-    return state.size
+    return state.sum()
 }
 
 private val List<Int>.display
@@ -36,11 +35,11 @@ fun main() {
     val filename = "Day06.txt"
 
     fun partOne() =
-        lanternfish(filename)
+        lanternfish(filename, 80)
 
     fun partTwo() =
-        lanternfish(filename)
+        lanternfish(filename, 256)
 
     println("Part One:\t${partOne()}")
-    //println("Part Two:\t${partTwo()}")
+    println("Part Two:\t${partTwo()}")
 }
