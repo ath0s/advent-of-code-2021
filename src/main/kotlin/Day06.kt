@@ -9,7 +9,7 @@ fun lanternfish(@Language("file-reference") filename: String, days: Int, printSt
     }
 
     if (printState)
-        println(state.joinToString(","))
+        println(state.display)
 
     for (day in 1..days) {
         val newBorn = state[0]
@@ -21,13 +21,13 @@ fun lanternfish(@Language("file-reference") filename: String, days: Int, printSt
         state[8] = newBorn
 
         if (printState)
-            println(state.joinToString(","))
+            println(state.display)
     }
 
     return state.sum()
 }
 
-private val List<Int>.display
+private val Array<Long>.display
     get() =
         joinToString(",")
 
