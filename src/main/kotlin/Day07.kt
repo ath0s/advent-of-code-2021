@@ -11,8 +11,8 @@ fun crabs(@Language("file-reference") filename: String, fuelPerStep: (Int) -> In
             val max = positions.maxOrNull()!!
             val cache = mutableMapOf<Int, Int>()
             val (position, fuel) = (min..max).fold(-1 to Integer.MAX_VALUE) { (bestPosition, bestFuel), currentPosition ->
-                val currentFuel = calculateFuelIfLessThan(cache, positions, currentPosition, fuelPerStep)
-                if (currentFuel  < bestFuel) {
+                val currentFuel = calculateFuelIfLessThan(cache, positions, currentPosition, bestFuel, fuelPerStep)
+                if (currentFuel != null) {
                     currentPosition to currentFuel
                 } else {
                     bestPosition to bestFuel
@@ -27,13 +27,17 @@ private fun calculateFuelIfLessThan(
     cache: MutableMap<Int, Int>,
     positions: Iterable<Int>,
     currentPosition: Int,
+    bestFuel: Int,
     fuelPerStep: (Int) -> Int
-): Int {
+): Int? {
     var sum = 0
     for (position in positions) {
         val moves = abs(currentPosition - position)
         val fuel = cache.computeIfAbsent(moves) { (1..it).map(fuelPerStep).sum() }
         sum += fuel
+        if (sum >= bestFuel) {
+            return null
+        }
     }
     return sum
 }
