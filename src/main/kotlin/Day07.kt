@@ -2,34 +2,38 @@ import org.intellij.lang.annotations.Language
 import kotlin.io.path.readLines
 import kotlin.math.abs
 
-fun crabs(@Language("file-reference") filename: String): Int =
+fun crabs(@Language("file-reference") filename: String, fuelPerStep: (Int) -> Int): Int =
     filename.asPath()
         .readLines()
         .let { lines ->
             val positions = lines[0].split(",").map { it.toInt() }
             val min = positions.minOrNull()!!
             val max = positions.maxOrNull()!!
-            val (position, moves) = (min..max).fold(-1 to Integer.MAX_VALUE) { (bestPosition, bestMoves), currentPosition ->
-                val currentMoves = calculateMovesIfLessThan(positions, currentPosition, bestMoves)
-                if (currentMoves != null) {
-                    currentPosition to currentMoves
+            val cache = mutableMapOf<Int, Int>()
+            val (position, fuel) = (min..max).fold(-1 to Integer.MAX_VALUE) { (bestPosition, bestFuel), currentPosition ->
+                val currentFuel = calculateFuelIfLessThan(cache, positions, currentPosition, fuelPerStep)
+                if (currentFuel  < bestFuel) {
+                    currentPosition to currentFuel
                 } else {
-                    bestPosition to bestMoves
+                    bestPosition to bestFuel
                 }
             }
-            println("Best position:\t$position")
-            println("Moves:\t$moves")
+            println("Best position:\t$position, fuel: $fuel")
 
-            return moves
+            return fuel
         }
 
-private fun calculateMovesIfLessThan(positions: Iterable<Int>, currentPosition: Int, bestMoves: Int): Int? {
+private fun calculateFuelIfLessThan(
+    cache: MutableMap<Int, Int>,
+    positions: Iterable<Int>,
+    currentPosition: Int,
+    fuelPerStep: (Int) -> Int
+): Int {
     var sum = 0
     for (position in positions) {
-        sum += abs(currentPosition - position)
-        if (sum >= bestMoves) {
-            return null
-        }
+        val moves = abs(currentPosition - position)
+        val fuel = cache.computeIfAbsent(moves) { (1..it).map(fuelPerStep).sum() }
+        sum += fuel
     }
     return sum
 }
@@ -38,11 +42,11 @@ fun main() {
     val filename = "Day07.txt"
 
     fun partOne() =
-        crabs(filename)
+        crabs(filename) { 1 }
 
     fun partTwo() =
-        crabs(filename)
+        crabs(filename) { it }
 
     println("Part One:\t${partOne()}")
-    //println("Part Two:\t${partTwo()}")
+    println("Part Two:\t${partTwo()}")
 }
