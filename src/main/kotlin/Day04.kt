@@ -1,49 +1,51 @@
 import AnsiColor.RESET
 import AnsiColor.WHITE_BOLD_BRIGHT
-import org.intellij.lang.annotations.Language
+import Day.Main
 import kotlin.io.path.readLines
 
 
-fun bingoScore(@Language("file-reference") filename: String, selector: (Sequence<Int>) -> Int): Int =
+fun bingoScore(filename: String, verbose: Boolean, selector: (Sequence<Int>) -> Int): Int =
     filename.asPath()
-    .readLines()
-    .let {
-        winningBoards(it).run(selector)
-    }
+        .readLines()
+        .let {
+            winningBoards(it, verbose).run(selector)
+        }
 
-private fun winningBoards(lines : List<String>) =
+private fun winningBoards(lines: List<String>, verbose: Boolean) =
     sequence {
         val drawnNumbers = lines.first().split(',').map { it.toInt() }
 
-                val boards = lines.drop(1).fold(mutableListOf<MutableList<String>>()) { accumulator, line ->
-                    if (line.isBlank()) {
-                        accumulator.add(mutableListOf())
-                    } else {
-                        accumulator.last().add(line)
-                    }
-                    accumulator
-                }.mapTo(mutableListOf()) {
-                    Board(it.map { line ->
-                        line.trim().split(Regex("\\D+")).map { number ->
-                            number.toInt()
-                        }
-                    })
+        val boards = lines.drop(1).fold(mutableListOf<MutableList<String>>()) { accumulator, line ->
+            if (line.isBlank()) {
+                accumulator.add(mutableListOf())
+            } else {
+                accumulator.last().add(line)
+            }
+            accumulator
+        }.mapTo(mutableListOf()) {
+            Board(it.map { line ->
+                line.trim().split(Regex("\\D+")).map { number ->
+                    number.toInt()
+                }
+            })
+        }
+
+        drawnNumbers.forEach { drawnNumber ->
+            boards.forEach { board -> board.check(drawnNumber) }
+
+            boards.filter { it.bingo }.forEach { winner ->
+                boards.remove(winner)
+                val sum = drawnNumber * winner.sumUnmarked
+
+                if (verbose) {
+                    println()
+                    println(winner)
+                    println("sumUnmarked (${winner.sumUnmarked}) * lastDrawnNumber ($drawnNumber) = $sum")
                 }
 
-                drawnNumbers.forEach { drawnNumber ->
-                    boards.forEach { board -> board.check(drawnNumber) }
-
-                    boards.filter { it.bingo }.forEach { winner ->
-                        boards.remove(winner)
-                        val sum = drawnNumber * winner.sumUnmarked
-
-                        println()
-                        println(winner)
-                        println("sumUnmarked (${winner.sumUnmarked}) * lastDrawnNumber ($drawnNumber) = $sum")
-
-                        yield(sum)
-                    }
-                }
+                yield(sum)
+            }
+        }
     }
 
 private class Board(numbers: List<List<Int>>) {
@@ -60,8 +62,9 @@ private class Board(numbers: List<List<Int>>) {
             return rows.any { it.allChecked } or cols.any { it.allChecked }
         }
 
-    val sumUnmarked: Int get() =
-        all.filter { !it.checked }.sumOf { it.number }
+    val sumUnmarked: Int
+        get() =
+            all.filter { !it.checked }.sumOf { it.number }
 
     override fun toString() =
         rows.joinToString("\n") {
@@ -71,10 +74,10 @@ private class Board(numbers: List<List<Int>>) {
     private val List<Position>.allChecked: Boolean
         get() = all { it.checked }
 
-    private class Position(val number: Int, var checked: Boolean = false)    {
+    private class Position(val number: Int, var checked: Boolean = false) {
         override fun toString() =
             number.toString().padStart(2).let {
-                if(checked) {
+                if (checked) {
                     "$WHITE_BOLD_BRIGHT$it$RESET"
                 } else {
                     it
@@ -83,15 +86,19 @@ private class Board(numbers: List<List<Int>>) {
     }
 }
 
-fun main() {
-    val filename = "Day04.txt"
+class Day04 : Day {
 
-    fun partOne() =
-        bingoScore(filename) { it.first() }
+    override fun partOne(filename: String, verbose: Boolean): Number =
+        bingoScore(filename, verbose) { it.first() }
 
-    fun partTwo() =
-        bingoScore(filename) { it.last() }
+    override fun partTwo(filename: String, verbose: Boolean): Number =
+        bingoScore(filename, verbose) { it.last() }
 
-    println("Part One:\t${partOne()}")
-    println("Part Two:\t${partTwo()}")
+    companion object : Main("Day04.txt") {
+
+        @JvmStatic
+        fun main(args: Array<String>) = main()
+
+    }
+
 }

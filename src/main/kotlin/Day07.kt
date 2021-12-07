@@ -1,8 +1,8 @@
-import org.intellij.lang.annotations.Language
+import Day.Main
 import kotlin.io.path.readLines
 import kotlin.math.abs
 
-fun crabs(@Language("file-reference") filename: String, fuelPerStep: (Int) -> Int): Int =
+fun crabs(filename: String, verbose: Boolean, fuelPerStep: (Int) -> Int): Int =
     filename.asPath()
         .readLines()
         .let { lines ->
@@ -18,7 +18,9 @@ fun crabs(@Language("file-reference") filename: String, fuelPerStep: (Int) -> In
                     bestPosition to bestFuel
                 }
             }
-            println("Best position:\t$position, fuel: $fuel")
+            if(verbose) {
+                println("Best position:\t$position, fuel: $fuel")
+            }
 
             return fuel
         }
@@ -42,15 +44,19 @@ private fun calculateFuelIfLessThan(
     return sum
 }
 
-fun main() {
-    val filename = "Day07.txt"
+class Day07 : Day {
 
-    fun partOne() =
-        crabs(filename) { 1 }
+    override fun partOne(filename: String, verbose: Boolean): Number =
+        crabs(filename, verbose) { 1 }
 
-    fun partTwo() =
-        crabs(filename) { it }
+    override fun partTwo(filename: String, verbose: Boolean): Number =
+        crabs(filename, verbose) { it }
 
-    println("Part One:\t${partOne()}")
-    println("Part Two:\t${partTwo()}")
+    companion object : Main("Day07.txt") {
+
+        @JvmStatic
+        fun main(args: Array<String>) = main()
+
+    }
+
 }

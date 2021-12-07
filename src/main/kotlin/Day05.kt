@@ -1,6 +1,6 @@
 import AnsiColor.RESET
 import AnsiColor.WHITE_BOLD_BRIGHT
-import org.intellij.lang.annotations.Language
+import Day.Main
 import kotlin.io.path.readLines
 import kotlin.math.abs
 import kotlin.math.max
@@ -8,7 +8,7 @@ import kotlin.math.min
 
 private val lineFormat = Regex("""(?<x1>\d+),\s*(?<y1>\d+)\s*->\s*(?<x2>\d+),\s*(?<y2>\d+)""")
 
-fun hydroThermalVents(@Language("file-reference") filename: String, includeDiagonal : Boolean = false, printBoard: Boolean = false): Int =
+fun hydroThermalVents(filename: String, includeDiagonal : Boolean = false, verbose: Boolean = false): Int =
     filename.asPath()
         .readLines()
         .let { input ->
@@ -23,7 +23,7 @@ fun hydroThermalVents(@Language("file-reference") filename: String, includeDiago
                     val coordinate = Coordinate(x, y)
                     val linesAtCoordinate = lines.count { it.contains(coordinate) }
                     if (linesAtCoordinate > 1) count++
-                    if(printBoard) {
+                    if(verbose) {
                         print(
                             when (linesAtCoordinate) {
                                 0 -> "."
@@ -33,7 +33,7 @@ fun hydroThermalVents(@Language("file-reference") filename: String, includeDiago
                         )
                     }
                 }
-                if(printBoard) {
+                if(verbose) {
                     println()
                 }
             }
@@ -81,15 +81,19 @@ private fun MatchResult.toLine() =
         Line(Coordinate(x1.toInt(), y1.toInt()), Coordinate(x2.toInt(), y2.toInt()))
     }
 
-fun main() {
-    val filename = "Day05.txt"
+class Day05 : Day {
 
-    fun partOne() =
-        hydroThermalVents(filename)
+    override fun partOne(filename: String, verbose: Boolean): Number =
+        hydroThermalVents(filename, verbose = verbose)
 
-    fun partTwo() =
-        hydroThermalVents(filename, includeDiagonal = true)
+    override fun partTwo(filename: String, verbose: Boolean): Number =
+        hydroThermalVents(filename, includeDiagonal = true, verbose = verbose)
 
-    println("Part One:\t${partOne()}")
-    println("Part Two:\t${partTwo()}")
+    companion object : Main("Day05.txt") {
+
+        @JvmStatic
+        fun main(args: Array<String>) = main()
+
+    }
+
 }

@@ -9,21 +9,26 @@ repositories {
 }
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.8.2"))
+    implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
+    testImplementation(platform("org.junit:junit-bom:5.8.2"))
 }
 
 tasks {
 
     wrapper {
-        gradleVersion = "7.3"
+        gradleVersion = "7.3.1"
     }
 
     withType<KotlinCompile>().configureEach {
-        kotlinOptions.jvmTarget = "11"
+        kotlinOptions {
+            jvmTarget = "11"
+            freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn")
+        }
     }
 
     test {
         useJUnitPlatform()
     }
+
 }

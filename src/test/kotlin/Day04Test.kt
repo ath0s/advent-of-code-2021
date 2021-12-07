@@ -1,20 +1,7 @@
-import kotlin.test.Test
-import kotlin.test.assertEquals
+class Day04Test : DayTest<Day04>("Day04_test.txt") {
 
-class Day04Test {
+    override val partOneExpected = 4512
 
-    @Test
-    fun `Part One`() {
-        val result = bingoScore("Day04_test.txt") { it.first() }
-
-        assertEquals(4512, result)
-    }
-
-    @Test
-    fun `Part Two`() {
-        val result = bingoScore("Day04_test.txt") { it.last() }
-
-        assertEquals(1924, result)
-    }
+    override val partTwoExpected = 1924
 
 }

@@ -1,7 +1,7 @@
 import Bit.*
-import org.intellij.lang.annotations.Language
+import Day.Main
 
-fun powerConsumption(@Language("file-reference") filename: String): Int {
+fun powerConsumption(filename: String, verbose: Boolean): Int {
     val lines = filename.asPath().readBinaries()
     val bitCounts = lines.toBitCounts()
 
@@ -11,36 +11,43 @@ fun powerConsumption(@Language("file-reference") filename: String): Int {
 
     val epsilon = !gamma
 
-    println("gamma\t$gamma")
-    println("epsilon\t$epsilon")
+    if(verbose) {
+        println("gamma\t$gamma")
+        println("epsilon\t$epsilon")
+    }
 
     return gamma.toInt() * epsilon.toInt()
 }
 
-fun lifeSupportRating(@Language("file-reference") filename: String): Int {
+fun lifeSupportRating(filename: String, verbose: Boolean): Int {
     val lines = filename.asPath().readBinaries()
-    val oxygenGeneratorRating = oxygenGeneratorRating(lines, 0)
-    val co2ScrubberRating = co2ScrubberRating(lines, 0)
+    val oxygenGeneratorRating = lines.oxygenGeneratorRating(0, verbose)
+    val co2ScrubberRating = lines.co2ScrubberRating(0, verbose)
 
-    println("oxygenGeneratorRating\t$oxygenGeneratorRating")
-    println("co2ScrubberRating\t$co2ScrubberRating")
+    if(verbose) {
+        println("oxygenGeneratorRating\t$oxygenGeneratorRating")
+        println("co2ScrubberRating\t$co2ScrubberRating")
+    }
 
     return oxygenGeneratorRating.toInt() * co2ScrubberRating.toInt()
 }
 
-private fun oxygenGeneratorRating(lines: List<Binary>, index: Int): Binary {
-    val bitToKeep = lines.toBitCounts()[index].maxOrDefault(`1`)
-
-    val linesToKeep = lines.filter { it[index] == bitToKeep }
-    println("oxygenGeneratorRating (index=$index,char=$bitToKeep)\t$linesToKeep")
-    return linesToKeep.singleOrNull() ?: oxygenGeneratorRating(linesToKeep, index + 1)
+private tailrec fun List<Binary>.oxygenGeneratorRating(index: Int, verbose: Boolean): Binary {
+    val bitToKeep = toBitCounts()[index].maxOrDefault(`1`)
+    val linesToKeep = filter { it[index] == bitToKeep }
+    if(verbose) {
+        println("oxygenGeneratorRating (index=$index,char=$bitToKeep)\t$linesToKeep")
+    }
+    return linesToKeep.singleOrNull() ?: linesToKeep.oxygenGeneratorRating(index + 1, verbose)
 }
 
-private fun co2ScrubberRating(lines: List<Binary>, index: Int): Binary {
-    val bitToKeep = lines.toBitCounts()[index].minOrDefault(`0`)
-    val linesToKeep = lines.filter { it[index] == bitToKeep }
-    println("co2ScrubberRating(index=$index,char=$bitToKeep)\t$linesToKeep")
-    return linesToKeep.singleOrNull() ?: co2ScrubberRating(linesToKeep, index + 1)
+private tailrec fun List<Binary>.co2ScrubberRating(index: Int, verbose: Boolean): Binary {
+    val bitToKeep = toBitCounts()[index].minOrDefault(`0`)
+    val linesToKeep = filter { it[index] == bitToKeep }
+    if(verbose) {
+        println("co2ScrubberRating(index=$index,char=$bitToKeep)\t$linesToKeep")
+    }
+    return linesToKeep.singleOrNull() ?: linesToKeep.co2ScrubberRating(index + 1, verbose)
 }
 
 private fun Iterable<Binary>.toBitCounts(): List<Map<Bit, Int>> =
@@ -69,16 +76,19 @@ private fun Map<Bit, Int>.minOrDefault(defaultValue: Bit): Bit {
     }
 }
 
-fun main() {
-    val filename = "Day03.txt"
+class Day03 : Day {
 
-    fun partOne() =
-        powerConsumption(filename)
+    override fun partOne(filename: String, verbose: Boolean): Number =
+        powerConsumption(filename, verbose)
 
-    fun partTwo() =
-        lifeSupportRating(filename)
+    override fun partTwo(filename: String, verbose: Boolean): Number =
+        lifeSupportRating(filename, verbose)
 
-    println("Part One:\t${partOne()}")
-    println("Part Two:\t${partTwo()}")
+    companion object : Main("Day03.txt") {
+
+        @JvmStatic
+        fun main(args: Array<String>) = main()
+
+    }
 
 }

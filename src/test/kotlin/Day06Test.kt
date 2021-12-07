@@ -1,20 +1,7 @@
-import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
+class Day06Test : DayTest<Day06>("Day06_test.txt") {
 
-class Day06Test {
+    override val partOneExpected = 5934L
 
-    @Test
-    fun `Part One`() {
-        val result = lanternfish("Day06_test.txt", 80, printState = true)
-
-        assertEquals(5934, result)
-    }
-
-    @Test
-    fun `Part Two`() {
-        val result = lanternfish("Day06_test.txt", 256, printState = true)
-
-        assertEquals(26984457539, result)
-    }
+    override val partTwoExpected = 26984457539L
 
 }

@@ -1,14 +1,14 @@
-import org.intellij.lang.annotations.Language
+import Day.Main
 import kotlin.io.path.readText
 
-fun lanternfish(@Language("file-reference") filename: String, days: Int, printState: Boolean = false): Long {
+fun lanternfish(filename: String, days: Int, verbose: Boolean = false): Long {
     val input = filename.asPath().readText().split(',').map { it.toInt() }
 
     val state = Array(9) { index ->
         input.count { it == index }.toLong()
     }
 
-    if (printState)
+    if (verbose)
         println(state.display)
 
     for (day in 1..days) {
@@ -20,7 +20,7 @@ fun lanternfish(@Language("file-reference") filename: String, days: Int, printSt
         state[6] += newBorn
         state[8] = newBorn
 
-        if (printState)
+        if (verbose)
             println(state.display)
     }
 
@@ -31,15 +31,19 @@ private val Array<Long>.display
     get() =
         joinToString(",")
 
-fun main() {
-    val filename = "Day06.txt"
+class Day06 : Day {
 
-    fun partOne() =
-        lanternfish(filename, 80)
+    override fun partOne(filename: String, verbose: Boolean): Number =
+        lanternfish(filename, 80, verbose)
 
-    fun partTwo() =
-        lanternfish(filename, 256)
+    override fun partTwo(filename: String, verbose: Boolean): Number =
+        lanternfish(filename, 256, verbose)
 
-    println("Part One:\t${partOne()}")
-    println("Part Two:\t${partTwo()}")
+    companion object : Main("Day06.txt") {
+
+        @JvmStatic
+        fun main(args: Array<String>) = main()
+
+    }
+
 }

@@ -1,7 +1,7 @@
-import org.intellij.lang.annotations.Language
+import Day.Main
 import kotlin.io.path.useLines
 
-fun numberOfIncreases(@Language("file-reference") filename: String, windowSize: Int = 1): Int =
+fun numberOfIncreases(filename: String, windowSize: Int = 1): Int =
     filename.asPath()
         .useLines { lines ->
             lines.toInts()
@@ -19,15 +19,19 @@ private fun Sequence<Int>.sumWindow(windowSize: Int) =
 private fun <T : Comparable<T>> Sequence<T>.mapToIsIncreasing() =
     zipWithNext { first, second -> second > first }
 
-fun main() {
-    val filename = "Day01.txt"
+class Day01 : Day {
 
-    fun partOne() =
+    override fun partOne(filename: String, verbose: Boolean): Number =
         numberOfIncreases(filename)
 
-    fun partTwo() =
+    override fun partTwo(filename: String, verbose: Boolean): Number =
         numberOfIncreases(filename, 3)
 
-    println("Part One:\t${partOne()}")
-    println("Part Two:\t${partTwo()}")
+    companion object : Main("Day01.txt") {
+
+        @JvmStatic
+        fun main(args: Array<String>) = main()
+
+    }
+
 }

@@ -1,20 +1,8 @@
-import kotlin.test.Test
-import kotlin.test.assertEquals
+class Day07Test : DayTest<Day07>("Day07_test.txt") {
 
-class Day07Test {
+    override val partOneExpected = 37
 
-    @Test
-    fun `Part One`() {
-        val result = crabs("Day07_test.txt") { 1 }
-
-        assertEquals(37, result)
-    }
-
-    @Test
-    fun `Part Two`() {
-        val result = crabs("Day07_test.txt") { it }
-
-        assertEquals(168, result)
-    }
+    override val partTwoExpected = 168
 
 }
+

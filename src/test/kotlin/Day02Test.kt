@@ -1,20 +1,7 @@
-import kotlin.test.Test
-import kotlin.test.assertEquals
+class Day02Test : DayTest<Day02>("Day02_test.txt") {
 
-class Day02Test {
+    override val partOneExpected = 150
 
-    @Test
-    fun `Part One`() {
-        val result = navigate("Day02_test.txt")
-
-        assertEquals(150, result)
-    }
-
-    @Test
-    fun `Part Two`() {
-        val result = navigate("Day02_test.txt", true)
-
-        assertEquals(900, result)
-    }
+    override val partTwoExpected = 900
 
 }

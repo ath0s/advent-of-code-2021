@@ -1,20 +1,7 @@
-import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
+class Day05Test : DayTest<Day05>("Day05_test.txt") {
 
-class Day05Test {
+    override val partOneExpected = 5
 
-    @Test
-    fun `Part One`() {
-        val result = hydroThermalVents("Day05_test.txt", includeDiagonal = false, printBoard = true)
+    override val partTwoExpected = 12
 
-        assertEquals(5, result)
-    }
-
-    @Test
-    fun `Part Two`() {
-        val result = hydroThermalVents("Day05_test.txt", includeDiagonal = true, printBoard = true)
-
-        assertEquals(12, result)
-    }
-    
 }

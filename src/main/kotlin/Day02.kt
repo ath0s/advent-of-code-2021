@@ -1,10 +1,10 @@
+import Day.Main
 import Direction.*
-import org.intellij.lang.annotations.Language
 import kotlin.io.path.useLines
 
 private val lineFormat = Regex("""(\S+)\s+(\d+)""")
 
-fun navigate(@Language("file-reference") filename: String, useAim: Boolean = false): Int =
+fun navigate(filename: String, useAim: Boolean = false): Int =
     filename.asPath()
         .useLines { lines ->
             return lines.map { line ->
@@ -56,15 +56,20 @@ private inline operator fun <reified T : Enum<T>> MatchResult.component1(): T =
 private operator fun MatchResult.component2(): Int =
     groupValues[2].toInt()
 
-fun main() {
-    val filename = "Day02.txt"
 
-    fun partOne() =
+class Day02 : Day {
+
+    override fun partOne(filename: String, verbose: Boolean): Number =
         navigate(filename)
 
-    fun partTwo() =
+    override fun partTwo(filename: String, verbose: Boolean): Number =
         navigate(filename, true)
-                             
-    println("Part One:\t${partOne()}")
-    println("Part Two:\t${partTwo()}")
+
+    companion object : Main("Day02.txt") {
+
+        @JvmStatic
+        fun main(args: Array<String>) = main()
+
+    }
+    
 }
