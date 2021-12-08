@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    runtimeOnly(kotlin("reflect"))
+    implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.8.2"))
 }
