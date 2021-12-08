@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("reflect"))
+    runtimeOnly(kotlin("reflect"))
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.8.2"))
 }
@@ -23,7 +23,7 @@ tasks {
     withType<KotlinCompile>().configureEach {
         kotlinOptions {
             jvmTarget = "11"
-            freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn")
+            freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
         }
     }
 
