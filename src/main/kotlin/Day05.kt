@@ -41,14 +41,6 @@ fun hydroThermalVents(filename: String, includeDiagonal : Boolean = false, verbo
         }
 
 
-private data class Coordinate(
-    val x: Int,
-    val y: Int
-) {
-    override fun toString() = "$x,$y"
-
-}
-
 private class Line(
     private val start: Coordinate,
     private val end: Coordinate
