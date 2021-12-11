@@ -4,6 +4,9 @@ import kotlin.io.path.readLines
 
 typealias Matrix = Array<Array<Int>>
 
+val Matrix.length get() =
+    size * get(0).size
+
 fun String.parseMatrix(): Matrix =
     asPath()
         .readLines()
@@ -16,7 +19,7 @@ fun Matrix.getOrthogonalNeighbors(coordinate: Coordinate) =
         Coordinate(coordinate.x - 1, coordinate.y),
         Coordinate(coordinate.x + 1, coordinate.y),
         Coordinate(coordinate.x, coordinate.y + 1)
-    )
+    ).filter { it in this }
 
 fun Matrix.getAllNeighbors(coordinate: Coordinate) =
     (coordinate.y - 1..coordinate.y + 1).flatMap { y ->

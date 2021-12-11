@@ -14,6 +14,20 @@ fun countOctopusFlashes(filename: String, iterations: Int, verbose: Boolean): In
     return count
 }
 
+fun firstFullFlash(filename: String, verbose: Boolean): Int {
+    val matrix = filename.parseMatrix()
+    return generateSequence { matrix.step() }
+        .onEach { flashes ->
+            if (verbose) {
+                matrix.print { it in flashes }
+                println()
+            }
+        }
+        .indexOfFirst {
+            it.size == matrix.length
+        } + 1
+}
+
 private fun Matrix.step(): Set<Coordinate> {
     updateEach { it + 1 }
 
@@ -45,7 +59,7 @@ class Day11 : Day {
         countOctopusFlashes(filename, 100, verbose)
 
     override fun partTwo(filename: String, verbose: Boolean): Number =
-        countOctopusFlashes(filename, 0, verbose)
+        firstFullFlash(filename, verbose)
 
     companion object : Main("Day11.txt") {
 
