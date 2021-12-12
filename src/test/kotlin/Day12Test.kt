@@ -18,7 +18,24 @@ class Day12Test : DayTest<Day12>("Day12_test.txt") {
         assertEquals(19, result)
     }
 
+    @Test
+    fun `Part Two - Small`() {
+        val result = target.partTwo("Day12_test_small.txt", true)
+
+        assertEquals(36, result)
+    }
+
+
+    @Test
+    fun `Part Two - Larger`() {
+        val result = target.partTwo("Day12_test_larger.txt", true)
+
+        assertEquals(103, result)
+    }
+
     override val partOneExpected = 226
+
+    override val partTwoExpected = 3509
 
 }
 

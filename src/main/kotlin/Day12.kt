@@ -2,15 +2,10 @@ import Day.Main
 import Node.Companion.Node
 import kotlin.io.path.readLines
 
-fun pathsWithSmallCavesAtMostOnce(filename: String, verbose: Boolean): Int {
+fun findNumberOfPaths(filename: String, numberOfAllowedRevisitedSmallCaves: Int, verbose: Boolean): Int {
     val graph = filename.parseGraph()
 
-    if (verbose) {
-        println(graph)
-        println()
-    }
-
-    val paths = graph.findPaths(listOf(graph.start))
+    val paths = graph.findPaths(listOf(graph.start), numberOfAllowedRevisitedSmallCaves)
 
     if (verbose) {
         paths.forEach {
@@ -21,7 +16,6 @@ fun pathsWithSmallCavesAtMostOnce(filename: String, verbose: Boolean): Int {
 
     return paths.size
 }
-
 
 private fun String.parseGraph() =
     asPath()
@@ -43,8 +37,8 @@ private fun String.parseGraph() =
             Graph(edges)
         }
 
-private sealed interface Node {
-    override fun toString(): String
+private sealed class Node(private val name: String) {
+    final override fun toString() = name
 
     companion object {
         fun Node(name: String) =
@@ -59,37 +53,41 @@ private sealed interface Node {
 
 }
 
-private object Start : Node {
-    override fun toString() = "start"
-}
+private object Start : Node("start")
 
-private object End : Node {
-    override fun toString() = "end"
-}
+private object End : Node("end")
 
-private data class SmallCave(private val name: String) : Node {
-    override fun toString() = name
-}
+private data class SmallCave(private val name: String) : Node(name)
 
-private data class BigCave(private val name: String) : Node {
-    override fun toString() = name
-}
+private data class BigCave(private val name: String) : Node(name)
 
 private class Graph(private val edges: Map<Node, Set<Node>>) {
 
     val start: Node get() = edges.keys.single { it == Start }
 
-
-    fun findPaths(path: List<Node>): List<List<Node>> {
+    fun findPaths(path: List<Node>, numberOfAllowedRevisitedSmallCaves: Int): List<List<Node>> {
         val previous = path.last()
         if (previous == End) {
             return listOf(path)
         }
-        val next = get(previous).filter { !(it is SmallCave && it in path) }
+        val existingDuplicateSmallCaves = path.filterIsInstance<SmallCave>()
+            .groupBy { it }
+            .mapValues { (_, visits) -> visits.size }
+            .filterValues { it > 1 }
+            .size
+
+        val allowedNextStep: (Node) -> Boolean = if (existingDuplicateSmallCaves < numberOfAllowedRevisitedSmallCaves) {
+            { true }
+        } else {
+            { !(it is SmallCave && it in path) }
+        }
+        val next = get(previous).filter(allowedNextStep)
+
         if (next.isEmpty()) {
             return emptyList()
         }
-        return next.flatMap { findPaths(path + it) }
+
+        return next.flatMap { findPaths(path + it, numberOfAllowedRevisitedSmallCaves) }
     }
 
     operator fun get(node: Node) =
@@ -103,10 +101,10 @@ private class Graph(private val edges: Map<Node, Set<Node>>) {
 class Day12 : Day {
 
     override fun partOne(filename: String, verbose: Boolean): Number =
-        pathsWithSmallCavesAtMostOnce(filename, verbose)
+        findNumberOfPaths(filename, 0, verbose)
 
     override fun partTwo(filename: String, verbose: Boolean): Number =
-        pathsWithSmallCavesAtMostOnce(filename, verbose)
+        findNumberOfPaths(filename, 1, verbose)
 
     companion object : Main("Day12.txt") {
 
