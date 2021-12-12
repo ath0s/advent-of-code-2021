@@ -11,7 +11,7 @@ abstract class DayTest<D : Day>(
     open val partOneExpected: Number = -1
     open val partTwoExpected: Number = -1
 
-    private val target: D = ((javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<*>).kotlin.newInstance()
+    protected val target: D = ((javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<*>).kotlin.newInstance()
 
     @Test
     fun `Part One`() {
