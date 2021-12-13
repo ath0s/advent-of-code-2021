@@ -16,24 +16,28 @@ fun foldPaper(filename: String, maxFolds: Int, verbose: Boolean) : Int {
 
     val matrix = dotCoordinates.toMatrix()
 
-    if(verbose) {
-        matrix.forEach { row ->
-            row.forEach { present ->
-                print(if(present) '#' else '.')
-            }
-            println()
-        }
-        println()
-    }
 
 
-    return foldInstructions.take(maxFolds).fold(matrix) { currentMatrix, foldInstruction ->
+    val folded = foldInstructions.take(maxFolds).fold(matrix) { currentMatrix, foldInstruction ->
         when (foldInstruction.axis) {
             'x' -> currentMatrix.foldX(foldInstruction.value)
             'y' -> currentMatrix.foldY(foldInstruction.value)
             else -> throw IllegalArgumentException("Illegal axis ${foldInstruction.axis}")
         }
-    }.flatten().count { it }
+    }
+
+    if(verbose) {
+        folded.forEach { row ->
+                row.forEach { present ->
+                    print(if(present) '#' else '.')
+                }
+                println()
+            }
+            println()
+        }
+
+
+    return folded.flatten().count { it }
 }
 
 private data class FoldInstruction(val axis: Char, val value: Int)
@@ -73,7 +77,7 @@ class Day13 : Day {
         foldPaper(filename, 1, verbose)
 
     override fun partTwo(filename: String, verbose: Boolean): Number =
-        foldPaper(filename, 1, verbose)
+        foldPaper(filename, Int.MAX_VALUE, true)
 
     companion object : Main("Day13.txt") {
 
