@@ -75,6 +75,8 @@ fun Matrix.update(coordinate: Coordinate, transform: (Int) -> Int) {
     set(coordinate, transform(previous))
 }
 
+fun Matrix.lastIndex() =
+    Coordinate(lastIndex, this[lastIndex].lastIndex)
 
 operator fun Matrix.contains(coordinate: Coordinate) =
     coordinate.y in (0..lastIndex) && coordinate.x in (0..get(coordinate.y).lastIndex)
