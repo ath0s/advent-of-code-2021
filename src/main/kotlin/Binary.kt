@@ -10,6 +10,9 @@ internal class Binary(private val bits: Array<Bit>) {
     fun toInt() =
         toString().toInt(2)
 
+    fun toLong() =
+        toString().toLong(2)
+
     operator fun get(index: Int) =
         bits[index]
 

@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.6.10"
@@ -19,10 +20,10 @@ tasks {
         gradleVersion = "7.3.1"
     }
 
-    compileKotlin {
+    withType<KotlinCompile>().configureEach {
         kotlinOptions {
             jvmTarget = "11"
-            freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
+            freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
         }
     }
 
