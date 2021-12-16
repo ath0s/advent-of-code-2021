@@ -1,6 +1,7 @@
 import Day.Main
-import LengthTypeId.numberOfSubPackets
-import LengthTypeId.totalLengthInBits
+import LengthType.numberOfSubPackets
+import LengthType.totalLengthInBits
+import PacketType.*
 import kotlin.io.path.readText
 
 private val hexToBinary = mapOf(
@@ -23,27 +24,39 @@ private val hexToBinary = mapOf(
 )
 
 fun sumVersionNumbers(filename: String, verbose: Boolean): Int {
-    val binary = filename.asPath().readText().map { hexToBinary[it] }.joinToString("").mapTo(mutableListOf()) { it.toBit() }
-
-    if (verbose) {
-        println("original\t${binary.joinToString("")}")
-    }
-
-    val packet = binary.toPacket(verbose)
-    if (verbose && binary.isNotEmpty()) {
-        println("trailing\t${binary.toBinary()}")
-    }
+    val packet = parsePacket(filename, verbose)
 
     return packet.sumVersion()
 }
 
+fun calculatePacketValue(filename: String, verbose: Boolean): Long {
+    val packet = parsePacket(filename, verbose)
+
+    return packet.value
+}
+
+private fun parsePacket(filename: String, verbose: Boolean) : Packet {
+    val binary = filename.asPath().readText().map { hexToBinary[it] }.joinToString("").mapTo(mutableListOf()) { it.toBit() }
+
+       if (verbose) {
+           println("original\t${binary.joinToString("")}")
+       }
+
+       val packet = binary.toPacket(verbose)
+       if (verbose && binary.isNotEmpty()) {
+           println("trailing\t${binary.toBinary()}")
+       }
+
+       return packet
+}
+
 private fun MutableList<Bit>.toPacket(verbose: Boolean): Packet {
     val version = removeFirst(3).toInt()
-    val typeId = removeFirst(3).toInt()
-    val packet = if (typeId == 4) {
+    val type = removeFirst(3).toInt().toPacketType()
+    val packet = if (type == literal) {
         toLiteralPacket(version, verbose)
     } else {
-        toOperatorPacket(version, typeId, verbose)
+        toOperatorPacket(version, type, verbose)
     }
 
     return packet
@@ -70,18 +83,18 @@ private fun MutableList<Bit>.toLiteralPacket(version: Int, verbose: Boolean): Li
     return LiteralPacket(version, valueBits.toLong())
 }
 
-private fun MutableList<Bit>.toOperatorPacket(version: Int, typeId: Int, verbose: Boolean): OperatorPacket {
+private fun MutableList<Bit>.toOperatorPacket(version: Int, type: PacketType, verbose: Boolean): OperatorPacket {
     if (verbose) {
         print("operator packet (version $version) ")
     }
-    val lengthTypeId = LengthTypeId.values()[removeFirst().toInt()]
+    val lengthType = removeFirst().toLengthType()
     val subPackets = mutableListOf<Packet>()
-    when (lengthTypeId) {
+    when (lengthType) {
         totalLengthInBits -> {
             if (verbose) {
                 print("(totalLengthInBits=")
             }
-            val totalLengthInBits = removeFirst(lengthTypeId.numberOfBits).toInt()
+            val totalLengthInBits = removeFirst(lengthType.numberOfBits).toInt()
             if (verbose) {
                 println("$totalLengthInBits)")
             }
@@ -95,7 +108,7 @@ private fun MutableList<Bit>.toOperatorPacket(version: Int, typeId: Int, verbose
             if (verbose) {
                 print("(numberOfSubPackets=")
             }
-            val numberOfSubPackets = removeFirst(lengthTypeId.numberOfBits).toInt()
+            val numberOfSubPackets = removeFirst(lengthType.numberOfBits).toInt()
             if (verbose) {
                 println("$numberOfSubPackets)")
             }
@@ -104,7 +117,16 @@ private fun MutableList<Bit>.toOperatorPacket(version: Int, typeId: Int, verbose
             }
         }
     }
-    return OperatorPacket(version, typeId, lengthTypeId, subPackets)
+    return when (type) {
+        sum -> SumPacket(version, subPackets)
+        product -> ProductPacket(version, subPackets)
+        minimum -> MinimumPacket(version, subPackets)
+        maximum -> MaximumPacket(version, subPackets)
+        greaterThan -> GreaterThanPacket(version, subPackets)
+        lessThan -> LessThanPacket(version, subPackets)
+        equalTo -> EqualToPacket(version, subPackets)
+        else -> throw IllegalArgumentException("$type is not a supported operator type")
+    }
 }
 
 private fun <T> MutableList<T>.removeFirst(n: Int) =
@@ -122,22 +144,17 @@ private fun List<Bit>.toLong() =
 
 private sealed interface Packet {
     val version: Int
-    val typeId: Int
-
+    val value: Long
     fun sumVersion() = version
 }
 
 private data class LiteralPacket(
     override val version: Int,
-    val value: Long
-) : Packet {
-    override val typeId = 4
-}
+    override val value: Long
+) : Packet
 
-private data class OperatorPacket(
+private sealed class OperatorPacket(
     override val version: Int,
-    override val typeId: Int,
-    val lengthTypeId: LengthTypeId,
     val subPackets: List<Packet>
 ) : Packet {
 
@@ -145,10 +162,64 @@ private data class OperatorPacket(
         super.sumVersion() + subPackets.sumOf { it.sumVersion() }
 }
 
-private enum class LengthTypeId(val numberOfBits: Int) {
+private class SumPacket(version: Int, subPackets: List<Packet>) : OperatorPacket(version, subPackets) {
+    override val value =
+        subPackets.sumOf { it.value }
+}
+
+private class ProductPacket(version: Int, subPackets: List<Packet>) : OperatorPacket(version, subPackets) {
+    override val value =
+        subPackets.map { it.value }.reduce(Long::times)
+}
+
+private class MinimumPacket(version: Int, subPackets: List<Packet>) : OperatorPacket(version, subPackets) {
+    override val value =
+        subPackets.minOf { it.value }
+}
+
+private class MaximumPacket(version: Int, subPackets: List<Packet>) : OperatorPacket(version, subPackets) {
+    override val value =
+        subPackets.maxOf { it.value }
+}
+
+private class GreaterThanPacket(version: Int, subPackets: List<Packet>) : OperatorPacket(version, subPackets) {
+    override val value =
+        if (subPackets[0].value > subPackets[1].value) 1L else 0L
+}
+
+private class LessThanPacket(version: Int, subPackets: List<Packet>) : OperatorPacket(version, subPackets) {
+    override val value =
+        if (subPackets[0].value < subPackets[1].value) 1L else 0L
+}
+
+private class EqualToPacket(version: Int, subPackets: List<Packet>) : OperatorPacket(version, subPackets) {
+    override val value =
+        if (subPackets[0].value == subPackets[1].value) 1L else 0L
+}
+
+@Suppress("EnumEntryName")
+private enum class PacketType {
+    sum,
+    product,
+    minimum,
+    maximum,
+    literal,
+    greaterThan,
+    lessThan,
+    equalTo
+}
+
+@Suppress("EnumEntryName")
+private enum class LengthType(val numberOfBits: Int) {
     totalLengthInBits(15),
     numberOfSubPackets(11)
 }
+
+private fun Int.toPacketType() =
+    PacketType.values()[toInt()]
+
+private fun Bit.toLengthType() =
+    LengthType.values()[toInt()]
 
 class Day16 : Day {
 
@@ -156,7 +227,7 @@ class Day16 : Day {
         sumVersionNumbers(filename, verbose)
 
     override fun partTwo(filename: String, verbose: Boolean): Number =
-        sumVersionNumbers(filename, verbose)
+        calculatePacketValue(filename, verbose)
 
     companion object : Main("Day16.txt") {
 
