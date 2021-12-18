@@ -6,7 +6,21 @@ fun snailFishNumberMagnitude(filename: String, verbose: Boolean): Int {
 
     val result = pairs.sum()
 
-    if(verbose) {
+    if (verbose) {
+        println("result\t$result")
+    }
+
+    return result.magnitude
+}
+
+fun largestMagnitude(filename: String, verbose: Boolean): Int {
+    val pairs = filename.asPath().readLines().map { it.toSnailfishPair() }
+
+    val allPairs = pairs.flatMap { first -> pairs.filter { it != first }.map { listOf(first, it) } }
+
+    val result = allPairs.map { it.sum() }.maxByOrNull { it.magnitude }!!
+
+    if (verbose) {
         println("result\t$result")
     }
 
@@ -17,6 +31,7 @@ internal sealed interface SnailfishElement {
     val magnitude: Int
     fun addToLeft(value: RegularNumber)
     fun addToRight(value: RegularNumber)
+    fun copy(): SnailfishElement
 }
 
 internal data class SnailfishPair(
@@ -27,25 +42,31 @@ internal data class SnailfishPair(
     override val magnitude
         get() = 3 * left.magnitude + 2 * right.magnitude
 
+    override fun addToLeft(value: RegularNumber) =
+          left.addToLeft(value)
+
+      override fun addToRight(value: RegularNumber) =
+          right.addToRight(value)
+
+    override fun copy() = copy(left = left.copy(), right = right.copy())
+
     private fun reduce() {
         do {
             val reduced = tryExplode() != null || trySplit()
-            if (reduced) {
-                println(this)
-            }
+            // if (reduced) println(this)
         } while (reduced)
     }
 
     operator fun plus(other: SnailfishPair): SnailfishPair {
-        val sum = SnailfishPair(this, other)
-        println("after addition:\t$sum")
+        val sum = SnailfishPair(this.copy(), other.copy())
+        //println("after addition:\t$sum")
         sum.reduce()
         return sum
     }
 
     internal fun tryExplode(depth: Int = 0): ExplosionResult? {
         if (depth == 4) {
-            print("after explode:\t")
+            //print("after explode:\t")
             return Exploded(left as RegularNumber, right as RegularNumber)
         }
         (left as? SnailfishPair)?.tryExplode(depth + 1)?.let { result ->
@@ -107,12 +128,6 @@ internal data class SnailfishPair(
         return false
     }
 
-    override fun addToLeft(value: RegularNumber) =
-        left.addToLeft(value)
-
-    override fun addToRight(value: RegularNumber) =
-        right.addToRight(value)
-
     override fun toString() =
         "[$left,$right]"
 
@@ -123,20 +138,19 @@ internal data class RegularNumber(
 ) : SnailfishElement {
 
     override val magnitude get() = number
+    override fun addToLeft(value: RegularNumber) = plusAssign(value)
+    override fun addToRight(value: RegularNumber) = plusAssign(value)
+    override fun copy() = copy(number = number)
 
     fun split(): SnailfishPair? =
         if (number >= 10) {
             val left = number / 2
             val right = left + (number % 2)
-            print("after split:\t")
+            //print("after split:\t")
             SnailfishPair(RegularNumber(left), RegularNumber(right))
         } else {
             null
         }
-
-    override fun addToLeft(value: RegularNumber) = plusAssign(value)
-
-    override fun addToRight(value: RegularNumber) = plusAssign(value)
 
     operator fun plusAssign(value: RegularNumber) {
         number += value.number
@@ -203,7 +217,7 @@ class Day18 : Day {
         snailFishNumberMagnitude(filename, verbose)
 
     override fun partTwo(filename: String, verbose: Boolean): Number =
-        snailFishNumberMagnitude(filename, verbose)
+        largestMagnitude(filename, verbose)
 
     companion object : Main("Day18.txt") {
 
