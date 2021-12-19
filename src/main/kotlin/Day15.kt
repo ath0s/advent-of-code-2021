@@ -27,7 +27,7 @@ fun shortestPath(filename: String, matrixMultiplier: Int, verbose: Boolean): Int
     val endNode = nodes[end]!!
 
     if (verbose) {
-        val shortestPath = endNode.shortestPath.map { it.value }.toSet() + end
+        val shortestPath = endNode.shortestPath.mapToSet { it.value } + end
         matrix.print { it in shortestPath }
         println()
     }
