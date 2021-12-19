@@ -8,10 +8,24 @@ fun numberOfBeacons(filename: String, verbose: Boolean): Int {
     val matched = alignAllScanners(input)
 
     val uniquePoints = matched.map { it.absoluteBeacons }
-        .reduce { a, b -> a.union(b) }
+        .reduce { a, b -> a union b }
         .toList()
 
     return uniquePoints.size
+}
+
+fun largestManhattanDistance(filename: String, verbose: Boolean): Int {
+    val input = parse(filename.asPath().readLines())
+
+    val matched = alignAllScanners(input)
+
+    val locations = matched.map { it.position}
+
+    return locations.flatMap { first ->
+        locations.filterNot { it == first }.map { second ->
+            first.manhattanDistance(second)
+        }
+    }.maxOrNull() ?: 0
 }
 
 private fun parse(input: List<String>): List<Scanner> =
@@ -66,7 +80,7 @@ private fun alignSingleOrientation(target: Scanner, scanner: Scanner) =
         scanner.relativeBeacons.mapNotNull { s ->
             val offset = t - s
             scanner.copy(position = offset).takeIf { moved ->
-                target.absoluteBeacons.intersect(moved.absoluteBeacons).size >= 12
+                (target.absoluteBeacons intersect moved.absoluteBeacons).size >= 12
             }
         }
     }.take(1)
@@ -83,8 +97,8 @@ private data class Point3d(
     operator fun plus(other: Point3d) =
         Point3d(x + other.x, y + other.y, z + other.z)
 
-    fun distance(other: Point3d) =
-        abs(other.x - x) + abs(other.y - y) - abs(other.z - z)
+    fun manhattanDistance(other: Point3d) =
+        abs(other.x - x) + abs(other.y - y) + abs(other.z - z)
 
     fun directions() =
         generateSequence(this) { Point3d(it.y, it.z, it.x) }
@@ -119,7 +133,7 @@ class Day19 : Day {
         numberOfBeacons(filename, verbose)
 
     override fun partTwo(filename: String, verbose: Boolean): Number =
-        numberOfBeacons(filename, verbose)
+        largestManhattanDistance(filename, verbose)
 
     companion object : Main("Day19.txt") {
 
