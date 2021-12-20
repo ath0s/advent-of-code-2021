@@ -1,11 +1,12 @@
 import java.nio.file.Path
 import kotlin.io.path.readLines
 
-internal class Binary(private val bits: Array<Bit>) {
+internal class Binary(
+    private val bits: Array<Bit>
+) : Iterable<Bit> {
 
-    override fun toString(): String {
-        return bits.joinToString("") { it.toString() }
-    }
+    override fun toString() =
+        bits.joinToString("")
 
     fun toInt() =
         toString().toInt(2)
@@ -19,9 +20,8 @@ internal class Binary(private val bits: Array<Bit>) {
     operator fun not() =
         Binary(bits.map { !it }.toTypedArray())
 
-    fun <R> mapIndexed(transform: (index: Int, Bit) -> R) =
-        bits.mapIndexed(transform)
-
+    override fun iterator() =
+        bits.iterator()
 }
 
 internal fun Collection<Bit>.toBinary() =
