@@ -2,8 +2,8 @@ import Day.Main
 import kotlin.io.path.readLines
 
 private val pixelToBit = mapOf(
-    '#' to Bit.`1`,
-    '.' to Bit.`0`
+    '#' to "1",
+    '.' to "0"
 )
 
 fun enhanceImage(filename: String, times: Int, verbose: Boolean): Int {
@@ -62,7 +62,7 @@ private class InfiniteMatrix(
         rows.flatten().count(predicate)
 
     private fun CharArray.toLookupIndex() =
-        map { pixelToBit[it]!! }.toBinary().toInt()
+        joinToString("") { pixelToBit[it]!! }.toInt(2)
 
     private operator fun List<List<Char>>.get(y: Int, x: Int): Char =
         rows.getOrNull(y)?.getOrNull(x) ?: infinitePixel
@@ -74,7 +74,7 @@ class Day20 : Day {
         enhanceImage(filename, 2, verbose)
 
     override fun partTwo(filename: String, verbose: Boolean): Number =
-        enhanceImage(filename, 2, verbose)
+        enhanceImage(filename, 50, verbose)
 
     companion object : Main("Day20.txt") {
 
