@@ -1,90 +1,82 @@
 import Day.Main
 import kotlin.io.path.readLines
+import kotlin.math.max
+import kotlin.math.min
 
 private val rulePattern = Regex("""(on|off) x=(.+)\.\.(.+),y=(.+)\.\.(.+),z=(.+)\.\.(.+)""")
 
-fun countCubes(filename: String, verbose: Boolean): Int {
-      val rules = filename.asPath().readLines().map { it.toCubeRule() }
+fun countCubes(filename: String, verbose: Boolean): Long {
+    val rules = filename.asPath().readLines().map { it.toCubicle() }
+        .filter { it.x.first >= -50 && it.x.last <= 50 }
+        .filter { it.y.first >= -50 && it.y.last <= 50 }
+        .filter { it.z.first >= -50 && it.z.last <= 50 }
 
-    var onCount = 0
-
-    (-50..50).forEach { x ->
-        (-50..50).forEach { y ->
-            (-50..50).forEach { z ->
-                var on = false
-                rules.forEach { rule ->
-                    val ruleOn = rule(x,y,z)
-                    if(ruleOn != null) {
-                        on = ruleOn
-                    }
-                }
-                if(on) {
-                    onCount++
-                }
-            }
-        }
-    }
-    
-
-    return onCount
+    return rules.countEnabledCubicles()
 }
 
 fun countAllCubes(filename: String, verbose: Boolean): Long {
-      val rules = filename.asPath().readLines().map { it.toCubeRule() }
+    val rules = filename.asPath().readLines().map { it.toCubicle() }
 
-    var onCount = 0L
+    return rules.countEnabledCubicles()
+}
 
-    val minX = rules.minOfOrNull { it.x.first }!!
-    val maxX = rules.maxOfOrNull { it.x.last }!!
-    val minY = rules.minOfOrNull { it.y.first }!!
-    val maxY = rules.maxOfOrNull { it.y.last }!!
-    val minZ = rules.minOfOrNull { it.z.first }!!
-    val maxZ = rules.maxOfOrNull { it.z.last }!!
+private fun Iterable<Cubicle>.countEnabledCubicles(): Long {
+    val cubicles = mutableListOf<Cubicle>()
 
-    (minX..maxX).forEach { x ->
-        (minY..maxY).forEach { y ->
-            (minZ..maxZ).forEach { z ->
-                var on = false
-                rules.forEach { rule ->
-                    val ruleOn = rule(x,y,z)
-                    if(ruleOn != null) {
-                        on = ruleOn
-                    }
-                }
-                if(on) {
-                    onCount++
-                }
+    forEach { rule ->
+        val newCubicles = mutableListOf<Cubicle>()
+        cubicles.forEach { cubicle ->
+            rule.invertedOverlappingCubicle(cubicle)?.also {
+                newCubicles += it
             }
+        }
+        cubicles += newCubicles
+        if (rule.on) {
+            cubicles += rule
         }
     }
 
-
-    return onCount
+    return cubicles.fold(0L) { sum, it ->
+        sum + it.volume * it.polarityAsLong
+    }
 }
 
-private data class CubeRule(
-    private val on: Boolean,
-    val x: IntRange,
-    val y: IntRange,
-    val z: IntRange
+private data class Cubicle(
+    val on: Boolean,
+    val x: LongRange,
+    val y: LongRange,
+    val z: LongRange
 ) {
 
-    operator fun invoke(x: Int, y: Int, z: Int) =
-        if (x in this.x && y in this.y && z in this.z) {
-            on
+    val volume =
+        (x.last - x.first + 1) * (y.last - y.first + 1) * (z.last - z.first + 1)
+
+    val polarityAsLong =
+        if (on) 1L else -1L
+
+    fun invertedOverlappingCubicle(other: Cubicle): Cubicle? {
+        val minX = max(x.first, other.x.first)
+        val maxX = min(x.last, other.x.last)
+        val minY = max(y.first, other.y.first)
+        val maxY = min(y.last, other.y.last)
+        val minZ = max(z.first, other.z.first)
+        val maxZ = min(z.last, other.z.last)
+        return if (minX <= maxX && minY <= maxY && minZ <= maxZ) {
+            Cubicle(!other.on, minX..maxX, minY..maxY, minZ..maxZ)
         } else {
             null
         }
+    }
 
     override fun toString() =
-        "${if(on)"on" else "off"} x=$x,y=$y,z=$z"
+        "${if (on) "on" else "off"} x=$x,y=$y,z=$z"
+
 }
 
-private fun String.toCubeRule() : CubeRule {
-    val (on, xFrom, xTo, yFrom,yTo,zFrom,zTo ) = rulePattern.matchEntire(this)!!.destructured
-    return CubeRule(on=="on", (xFrom.toInt()..xTo.toInt()), (yFrom.toInt()..yTo.toInt()), (zFrom.toInt()..zTo.toInt()))
+private fun String.toCubicle(): Cubicle {
+    val (on, xFrom, xTo, yFrom, yTo, zFrom, zTo) = rulePattern.matchEntire(this)!!.destructured
+    return Cubicle(on == "on", (xFrom.toLong()..xTo.toLong()), (yFrom.toLong()..yTo.toLong()), (zFrom.toLong()..zTo.toLong()))
 }
-
 
 class Day22 : Day {
 
@@ -92,8 +84,7 @@ class Day22 : Day {
         countCubes(filename, verbose)
 
     override fun partTwo(filename: String, verbose: Boolean): Number =
-        countCubes(filename, verbose)
-        //countAllCubes(filename, verbose)
+        countAllCubes(filename, verbose)
 
     companion object : Main("Day22.txt") {
 
