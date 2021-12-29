@@ -18,7 +18,7 @@ dependencies {
 tasks {
 
     wrapper {
-        gradleVersion = "7.3.1"
+        gradleVersion = "7.3.3"
     }
 
     withType<KotlinCompile>().configureEach {
