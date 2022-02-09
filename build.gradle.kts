@@ -18,13 +18,13 @@ dependencies {
 tasks {
 
     wrapper {
-        gradleVersion = "7.3.3"
+        gradleVersion = "7.4"
     }
 
     withType<KotlinCompile>().configureEach {
         kotlinOptions {
             jvmTarget = "11"
-            freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+            freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
         }
     }
 
