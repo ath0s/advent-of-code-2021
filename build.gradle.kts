@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.6.20"
 }
 
 repositories {
@@ -18,7 +18,7 @@ dependencies {
 tasks {
 
     wrapper {
-        gradleVersion = "7.4"
+        gradleVersion = "7.4.2"
     }
 
     withType<KotlinCompile>().configureEach {
