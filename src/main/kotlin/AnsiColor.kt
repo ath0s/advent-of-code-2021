@@ -70,6 +70,6 @@ internal object AnsiColor {
     const val BLUE_BACKGROUND_BRIGHT = "\u001b[0;104m"  // BLUE
     const val MAGENTA_BACKGROUND_BRIGHT = "\u001b[0;105m"  // MAGENTA
     const val CYAN_BACKGROUND_BRIGHT = "\u001b[0;106m"  // CYAN
-    const val WHITE_BACKGROUND_BRIGHT = "\u001b[0;107m";    // WHITE
+    const val WHITE_BACKGROUND_BRIGHT = "\u001b[0;107m"    // WHITE
 
 }
