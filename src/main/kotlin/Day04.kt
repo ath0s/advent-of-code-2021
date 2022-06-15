@@ -50,7 +50,7 @@ private fun winningBoards(lines: List<String>, verbose: Boolean) =
 
 private class Board(numbers: List<List<Int>>) {
     private val rows = numbers.map { row -> row.map { number -> Position(number) } }
-    private val cols = rows[0].mapIndexed { index, _ -> rows.map { it[index] } }
+    private val cols = List(rows[0].size) { index -> rows.map { it[index] } }
     private val all = rows.flatten()
 
     fun check(number: Int) {
